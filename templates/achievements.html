@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Achevement | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="card wide">
+  <div class="section-header">
+    <div>
+      <h1>Hall Of Fame & Bounty Posts</h1>
+      <p class="subtitle">Public gallery. Entries are auto-arranged by achievement date and latest first.</p>
+    </div>
+  </div>
+
+  {% if can_manage_owner %}
+    <div class="panel top-gap owner-upload-panel">
+      <h2 class="section-title">Owner Upload Panel</h2>
+      <p class="subtitle">Only owner can add, edit, or remove entries.</p>
+      <form
+        id="achievement-upload-form"
+        method="post"
+        action="{{ url_for('main.upload_achievement') }}"
+        enctype="multipart/form-data"
+        class="upload-grid top-gap"
+      >
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+        <label for="category">Type</label>
+        <select id="category" name="category" required>
+          <option value="hall_of_fame">Hall Of Fame</option>
+          <option value="bounty_post">Bounty Post</option>
+        </select>
+
+        <label for="title">Title</label>
+        <input id="title" name="title" type="text" required minlength="3" maxlength="140" placeholder="Title" />
+
+        <label for="achieved_on">Achievement Date</label>
+        <input id="achieved_on" name="achieved_on" type="date" />
+
+        <label for="description">Description</label>
+        <textarea id="description" name="description" maxlength="1200" rows="3" placeholder="Short details"></textarea>
+
+        <label for="proof_file">Upload File (PNG/JPG/JPEG/WEBP/GIF/PDF)</label>
+        <div class="file-input-row">
+          <input id="proof_file" name="proof_file" type="file" accept=".png,.jpg,.jpeg,.webp,.gif,.pdf" required />
+          <button
+            id="clear-proof-file"
+            class="btn btn-light btn-small file-clear-btn"
+            type="button"
+            aria-label="Remove selected file"
+            title="Remove selected file"
+            hidden
+          >
+            x
+          </button>
+        </div>
+        <small id="proof-file-name" class="hint"></small>
+
+        <button class="btn btn-primary" type="submit">Upload Entry</button>
+      </form>
+    </div>
+  {% endif %}
+</section>
+
+<section class="card wide top-gap">
+  <div class="achievement-section">
+    <h2>Hall Of Fame</h2>
+    <div class="achievement-grid top-gap">
+      {% if hall_of_fame %}
+        {% for item in hall_of_fame %}
+          <article class="achievement-card">
+            {% if item.mime_type.startswith('image/') %}
+              <a href="{{ url_for('main.view_achievement_file', achievement_id=item.id) }}" target="_blank" rel="noopener">
+                <img
+                  class="achievement-thumb"
+                  src="{{ url_for('main.view_achievement_file', achievement_id=item.id) }}"
+                  alt="{{ item.title }}"
+                  loading="lazy"
+                />
+              </a>
+            {% else %}
+              <a class="file-pill" href="{{ url_for('main.view_achievement_file', achievement_id=item.id) }}" target="_blank" rel="noopener">Open PDF</a>
+            {% endif %}
+
+            <h3>{{ item.title }}</h3>
+            {% if item.description %}
+              <p>{{ item.description }}</p>
+            {% endif %}
+
+            <div class="achievement-meta">
+              <small><strong>Achieved:</strong> {{ item.event_date or item.created_at.date() }}</small>
+              <small><strong>Uploaded:</strong> {{ item.created_at }}</small>
+            </div>
+
+            {% if can_manage_owner %}
+              <div class="owner-actions top-gap">
+                <details class="owner-edit-details">
+                  <summary class="btn btn-light btn-small owner-edit-summary">Edit</summary>
+                  <form
+                    method="post"
+                    action="{{ url_for('main.edit_achievement', achievement_id=item.id) }}"
+                    enctype="multipart/form-data"
+                    class="upload-grid owner-edit-form"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                    <label for="edit-category-{{ item.id }}">Type</label>
+                    <select id="edit-category-{{ item.id }}" name="category" required>
+                      <option value="hall_of_fame" {% if item.category == 'hall_of_fame' %}selected{% endif %}>Hall Of Fame</option>
+                      <option value="bounty_post" {% if item.category == 'bounty_post' %}selected{% endif %}>Bounty Post</option>
+                    </select>
+
+                    <label for="edit-title-{{ item.id }}">Title</label>
+                    <input id="edit-title-{{ item.id }}" name="title" type="text" minlength="3" maxlength="140" required value="{{ item.title }}" />
+
+                    <label for="edit-achieved-on-{{ item.id }}">Achievement Date</label>
+                    <input
+                      id="edit-achieved-on-{{ item.id }}"
+                      name="achieved_on"
+                      type="date"
+                      value="{{ item.event_date.isoformat() if item.event_date else '' }}"
+                    />
+
+                    <label for="edit-description-{{ item.id }}">Description</label>
+                    <textarea id="edit-description-{{ item.id }}" name="description" maxlength="1200" rows="3">{{ item.description }}</textarea>
+
+                    <label for="edit-proof-file-{{ item.id }}">Replace File (Optional)</label>
+                    <input
+                      id="edit-proof-file-{{ item.id }}"
+                      name="proof_file"
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.webp,.gif,.pdf"
+                    />
+
+                    <button class="btn btn-primary btn-small" type="submit">Save Edit</button>
+                  </form>
+                </details>
+
+                <form method="post" action="{{ url_for('main.delete_achievement', achievement_id=item.id) }}" class="owner-inline-delete">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button
+                    class="btn btn-danger btn-small"
+                    type="submit"
+                    data-confirm-message="Delete this achievement permanently?"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty-card">No Hall Of Fame entries yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="card wide top-gap">
+  <div class="achievement-section">
+    <h2>Bounty Posts</h2>
+    <div class="achievement-grid top-gap">
+      {% if bounty_posts %}
+        {% for item in bounty_posts %}
+          <article class="achievement-card">
+            {% if item.mime_type.startswith('image/') %}
+              <a href="{{ url_for('main.view_achievement_file', achievement_id=item.id) }}" target="_blank" rel="noopener">
+                <img
+                  class="achievement-thumb"
+                  src="{{ url_for('main.view_achievement_file', achievement_id=item.id) }}"
+                  alt="{{ item.title }}"
+                  loading="lazy"
+                />
+              </a>
+            {% else %}
+              <a class="file-pill" href="{{ url_for('main.view_achievement_file', achievement_id=item.id) }}" target="_blank" rel="noopener">Open PDF</a>
+            {% endif %}
+
+            <h3>{{ item.title }}</h3>
+            {% if item.description %}
+              <p>{{ item.description }}</p>
+            {% endif %}
+
+            <div class="achievement-meta">
+              <small><strong>Achieved:</strong> {{ item.event_date or item.created_at.date() }}</small>
+              <small><strong>Uploaded:</strong> {{ item.created_at }}</small>
+            </div>
+
+            {% if can_manage_owner %}
+              <div class="owner-actions top-gap">
+                <details class="owner-edit-details">
+                  <summary class="btn btn-light btn-small owner-edit-summary">Edit</summary>
+                  <form
+                    method="post"
+                    action="{{ url_for('main.edit_achievement', achievement_id=item.id) }}"
+                    enctype="multipart/form-data"
+                    class="upload-grid owner-edit-form"
+                  >
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+                    <label for="edit-category-{{ item.id }}">Type</label>
+                    <select id="edit-category-{{ item.id }}" name="category" required>
+                      <option value="hall_of_fame" {% if item.category == 'hall_of_fame' %}selected{% endif %}>Hall Of Fame</option>
+                      <option value="bounty_post" {% if item.category == 'bounty_post' %}selected{% endif %}>Bounty Post</option>
+                    </select>
+
+                    <label for="edit-title-{{ item.id }}">Title</label>
+                    <input id="edit-title-{{ item.id }}" name="title" type="text" minlength="3" maxlength="140" required value="{{ item.title }}" />
+
+                    <label for="edit-achieved-on-{{ item.id }}">Achievement Date</label>
+                    <input
+                      id="edit-achieved-on-{{ item.id }}"
+                      name="achieved_on"
+                      type="date"
+                      value="{{ item.event_date.isoformat() if item.event_date else '' }}"
+                    />
+
+                    <label for="edit-description-{{ item.id }}">Description</label>
+                    <textarea id="edit-description-{{ item.id }}" name="description" maxlength="1200" rows="3">{{ item.description }}</textarea>
+
+                    <label for="edit-proof-file-{{ item.id }}">Replace File (Optional)</label>
+                    <input
+                      id="edit-proof-file-{{ item.id }}"
+                      name="proof_file"
+                      type="file"
+                      accept=".png,.jpg,.jpeg,.webp,.gif,.pdf"
+                    />
+
+                    <button class="btn btn-primary btn-small" type="submit">Save Edit</button>
+                  </form>
+                </details>
+
+                <form method="post" action="{{ url_for('main.delete_achievement', achievement_id=item.id) }}" class="owner-inline-delete">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                  <button
+                    class="btn btn-danger btn-small"
+                    type="submit"
+                    data-confirm-message="Delete this achievement permanently?"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </div>
+            {% endif %}
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty-card">No Bounty Post entries yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if can_manage_owner %}
+  <script src="{{ url_for('static', filename='js/home_upload.js') }}"></script>
+  <script>
+    (function () {
+      const buttons = document.querySelectorAll("[data-confirm-message]");
+      buttons.forEach((button) => {
+        button.addEventListener("click", (event) => {
+          const message = button.getAttribute("data-confirm-message") || "Are you sure?";
+          if (!window.confirm(message)) {
+            event.preventDefault();
+          }
+        });
+      });
+    })();
+  </script>
+{% endif %}
+{% endblock %}

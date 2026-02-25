@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Moderation | SecureAuth{% endblock %}
+
+{% block content %}
+<section
+  id="admin-manage"
+  class="card wide"
+  data-focus-user-id="{{ focus_user_id if focus_user_id is not none else '' }}"
+  data-scroll-position="{{ scroll_position if scroll_position is not none else '' }}"
+>
+  <div class="admin-header">
+    <div>
+      <h1>Account Moderation</h1>
+      <p class="subtitle">Only admins can block, disable, unlock, change role, or delete accounts.</p>
+    </div>
+    <a class="btn btn-primary" href="{{ url_for('main.admin_add_member_page') }}">Go To Add Member</a>
+  </div>
+
+  <div class="moderation-list">
+    {% for user in users %}
+      <article id="member-{{ user.id }}" class="moderation-card {% if focus_user_id == user.id %}focus-member{% endif %}">
+        <div class="moderation-main">
+          <div>
+            <div class="member-top">
+              <h2>{{ user.username }}</h2>
+              <span class="member-id">ID #{{ user.id }}</span>
+            </div>
+            <p class="member-email">{{ user.email }}</p>
+          </div>
+
+          <div class="meta-chips">
+            <span class="chip">Role: {{ user.role|capitalize }}</span>
+            {% if user.is_active %}
+              <span class="status-badge active">Active</span>
+            {% else %}
+              <span class="status-badge disabled">Disabled</span>
+            {% endif %}
+            <span class="chip">
+              Locked:
+              {% if user.lockout_until %}
+                {{ user.lockout_until }}
+              {% else %}
+                No
+              {% endif %}
+            </span>
+          </div>
+        </div>
+
+        <div class="moderation-actions">
+          <form
+            method="post"
+            action="{{ url_for('main.update_user_role', user_id=user.id) }}"
+            class="inline-form preserve-scroll"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="scroll_y" value="" />
+            <label class="sr-only" for="role-{{ user.id }}">Role</label>
+            <select id="role-{{ user.id }}" name="role">
+              <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+              <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+            <button class="btn btn-small" type="submit">Save Role</button>
+          </form>
+
+          <form
+            method="post"
+            action="{{ url_for('main.temporary_block_user', user_id=user.id) }}"
+            class="inline-form preserve-scroll block-form"
+          >
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" name="scroll_y" value="" />
+            <div class="block-form-box">
+              <label class="sr-only" for="minutes-{{ user.id }}">Minutes</label>
+              <input id="minutes-{{ user.id }}" type="number" name="minutes" min="1" max="1440" value="30" />
+              <button class="btn btn-small btn-block" type="submit">Temp Block</button>
+            </div>
+          </form>
+
+          <div class="action-strip">
+            <form method="post" action="{{ url_for('main.unlock_user', user_id=user.id) }}" class="preserve-scroll">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="scroll_y" value="" />
+              <button class="btn btn-warning btn-small" type="submit">Unlock</button>
+            </form>
+
+            <form method="post" action="{{ url_for('main.toggle_user_status', user_id=user.id) }}" class="preserve-scroll">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="scroll_y" value="" />
+              {% if user.is_active %}
+                <input type="hidden" name="action" value="disable" />
+                <button class="btn btn-danger btn-small" type="submit">Disable</button>
+              {% else %}
+                <input type="hidden" name="action" value="enable" />
+                <button class="btn btn-primary btn-small" type="submit">Enable</button>
+              {% endif %}
+            </form>
+
+            <form method="post" action="{{ url_for('main.delete_user', user_id=user.id) }}" class="preserve-scroll">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input type="hidden" name="scroll_y" value="" />
+              <button
+                class="btn btn-danger btn-small"
+                type="submit"
+                data-confirm-message="Delete this account permanently?"
+              >
+                Delete
+              </button>
+            </form>
+          </div>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin_manage.js') }}"></script>
+{% endblock %}

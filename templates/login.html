@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Login | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1>Welcome Back</h1>
+  <p class="subtitle">Use your email and password to access your dashboard.</p>
+
+  <form id="login-form" method="post" class="form-grid" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+    <label for="password">Password</label>
+    <div class="password-field">
+      <input id="password" name="password" type="password" required minlength="12" />
+      <button
+        type="button"
+        class="password-toggle"
+        data-target="password"
+        aria-label="Show password"
+        aria-pressed="false"
+      >
+        <span class="eye-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+        </span>
+        <span class="eye-off-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M4 20L20 4"></path>
+          </svg>
+        </span>
+      </button>
+    </div>
+
+    <label for="captcha_answer">CAPTCHA: {{ captcha_question }}</label>
+    <input id="captcha_answer" name="captcha_answer" type="text" required />
+
+    <button class="btn btn-primary" type="submit">Login</button>
+  </form>
+
+  <p class="hint">No account yet? <a href="{{ url_for('main.register') }}">Register here</a>.</p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/password_toggle.js') }}"></script>
+{% endblock %}

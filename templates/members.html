@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Members | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="card wide">
+  <h1>Members</h1>
+  <p class="subtitle">Visible to logged-in users. Admin and user members are listed below.</p>
+
+  {% if current_user.role == "admin" %}
+    <div class="panel">
+      <p>
+        You are an admin. Use the
+        <a href="{{ url_for('main.admin_dashboard') }}">Admin Dashboard</a>
+        to add user/admin accounts and manage roles.
+      </p>
+    </div>
+  {% endif %}
+
+  <div class="member-grid top-gap">
+    <div class="panel">
+      <h2 class="section-title">Admin Members</h2>
+      <ul class="member-list">
+        {% for admin in admins %}
+          <li>
+            <span class="member-name">{{ admin.username }}</span>
+            <span class="member-email">{{ admin.email }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h2 class="section-title">User Members</h2>
+      <ul class="member-list">
+        {% for user in users %}
+          <li>
+            <span class="member-name">{{ user.username }}</span>
+            <span class="member-email">{{ user.email }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

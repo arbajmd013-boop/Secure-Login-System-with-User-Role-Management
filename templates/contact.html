@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Contact | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="card wide">
+  <h1>Contact Us</h1>
+  <p class="subtitle">Public contact details for collaboration and responsible disclosure communication.</p>
+
+  <div class="panel top-gap contact-view">
+    <p><strong>Name:</strong> {{ contact_name }}</p>
+    <p><strong>Email:</strong> {{ contact_email }}</p>
+  </div>
+</section>
+
+{% if can_manage_owner %}
+  <section class="card wide top-gap owner-edit-panel">
+    <h2>Owner Content Control: Contact</h2>
+    <p class="subtitle">Only owner can update the public contact details.</p>
+    <form method="post" action="{{ url_for('main.update_contact_content') }}" class="form-grid top-gap">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      <label for="contact_name">Name</label>
+      <input id="contact_name" name="contact_name" type="text" minlength="2" maxlength="120" required value="{{ contact_name }}" />
+
+      <label for="contact_email">Email</label>
+      <input id="contact_email" name="contact_email" type="email" required value="{{ contact_email }}" />
+
+      <button class="btn btn-primary" type="submit">Save Contact</button>
+    </form>
+  </section>
+{% endif %}
+{% endblock %}

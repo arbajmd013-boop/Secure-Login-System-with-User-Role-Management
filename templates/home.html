@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Home | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="landing-hero card wide">
+  <div class="hero-grid">
+    <div class="intro-card">
+      <p class="eyebrow">Cybersecurity Profile</p>
+      <h1>About Me</h1>
+      <p class="about-copy">{{ about_text }}</p>
+    </div>
+
+    <aside class="panel contact-card">
+      <h2>MD ARBAJ ANSARI</h2>
+      <p class="subtitle">Bug Bounty Researcher</p>
+      <p class="top-gap"><strong>Email:</strong> arbajmd013@gmail.com</p>
+      <div class="auth-shortcuts">
+        <a class="btn btn-primary" href="{{ url_for('main.achievements_page') }}">View Achevement</a>
+        <a class="btn btn-light" href="{{ url_for('main.contact_page') }}">Contact</a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+{% if can_manage_owner %}
+  <section class="card wide top-gap owner-edit-panel">
+    <h2>Owner Content Control: About</h2>
+    <p class="subtitle">Only owner can update this public section.</p>
+    <form method="post" action="{{ url_for('main.update_about_content') }}" class="form-grid top-gap">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <label for="about_text">About Text</label>
+      <textarea id="about_text" name="about_text" rows="8" minlength="40" maxlength="5000" required>{{ about_text }}</textarea>
+      <button class="btn btn-primary" type="submit">Save About</button>
+    </form>
+  </section>
+{% endif %}
+{% endblock %}

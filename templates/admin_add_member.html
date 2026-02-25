@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Add Member | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="card wide">
+  <div class="admin-header">
+    <div>
+      <h1>Add Member</h1>
+      <p class="subtitle">Create a new account as either <strong>User</strong> or <strong>Admin</strong>.</p>
+    </div>
+    <a class="btn btn-light" href="{{ url_for('main.admin_dashboard') }}">Go To Moderation</a>
+  </div>
+
+  <div class="panel add-member-panel add-page-panel">
+    <form id="admin-create-form" method="post" action="{{ url_for('main.create_member') }}" class="form-grid">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      <label for="create_username">Username</label>
+      <input
+        id="create_username"
+        name="username"
+        type="text"
+        required
+        minlength="3"
+        maxlength="30"
+        pattern="[A-Za-z0-9_]+"
+        placeholder="member_name"
+      />
+
+      <label for="create_email">Email</label>
+      <input id="create_email" name="email" type="email" required placeholder="member@example.com" />
+
+      <label for="create_password">Password</label>
+      <input id="create_password" name="password" type="password" required minlength="12" />
+      <small class="hint">12+ chars, uppercase, lowercase, number, symbol.</small>
+
+      <label for="create_role">Role</label>
+      <select id="create_role" name="role" required>
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <button class="btn btn-primary" type="submit">Add Member</button>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/validation.js') }}"></script>
+{% endblock %}

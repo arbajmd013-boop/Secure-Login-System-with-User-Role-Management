@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard | SecureAuth{% endblock %}
+
+{% block content %}
+<section class="card">
+  <h1>User Dashboard</h1>
+  <p class="subtitle">You are logged in as a regular user.</p>
+  <div class="panel">
+    <p><strong>Username:</strong> {{ current_user.username }}</p>
+    <p><strong>Email:</strong> {{ current_user.email }}</p>
+    <p><strong>Role:</strong> {{ current_user.role }}</p>
+    <p>Admin tools are restricted by role-based access control.</p>
+    <a class="btn btn-primary" href="{{ url_for('main.members') }}">View Members</a>
+  </div>
+</section>
+{% endblock %}
